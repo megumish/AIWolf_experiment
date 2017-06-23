@@ -1,38 +1,34 @@
 from argparse import ArgumentParser
+import logging
+from util.common import *
+from util.log_to_image.conf import *
 
-class Role:
-    __role_str_index_map = { 'WEREWOLF':0, 'POSSESSED':1, 'VILLAGER':2, 'BODYGUARD':3, 'MEDIUM':4, 'SEER':5 }
-    def str_to_index(role_str):
-        return __role_str_index_map[role_str]
-    __role_index_str_map = {v:k for k, v in __role_str_index_map.items()}
-    def index_to_str(role_index):
-        return __role_index_str_map[role_index]
+__config = Config()
+def parse_args():
+    global __config
 
-class Talk:
-    __talk_str_index_map = { 'ESTIMATE':0, 'COMINGOUT':1, 'DIVINATION':2, 'DIVINED':3, 'INQUESTED':4, 'GUARD':5, 'GUARDED': 6, 'VOTE':7, 'ATTACK':8, 'AGREE':8, 'DISAGREE':10, 'OVER':11, 'SKIP':12, 'OPERATOR': 13 }
-    talk_num = len(__talk_str_index_map)
-    def str_to_index(talk_str):
-        return __talk_str_index_map[talk_str]
-    __talk_index_str_map = {v:k for k, v in __talk_str_index_map.items()}
-    def index_to_str(talk_index):
-        return __talk_index_str_map[talk_index]
-
-__input_dir = ""
-__player_num = 15
-__output_num = 1000
-__verbose = False
-def parse_argv():
-    usage = 'Usage: python3 {} INPUT_DIR OUTPUT_NUM [--verbose] [--output <directory>] [--help]'.format(__file__)
-    argparser = ArgumentParser(usage=usage)
-    argparser.add_argument('INPUT_DIR', type=str, help='input log file')
-    argparser.add_argument('OUTPUT_NUM', type=int, help='number of outputs of each role')
+    description = 'AIWolf log to image. By default, generate train mode image used all agent data'
+    argparser = ArgumentParser(description=description)
+    argparser.add_argument('input_dir', metavar='INPUT_DIR', type=str, help='input log file')
+    argparser.add_argument('output_num', metavar='OUTPUT_NUM', type=int, help='number of outputs of each role')
     argparser.add_argument('-v', '--verbose', action='store_true', help='show verbose message')
-    argparser.add_argument('-o', '--output', dest='ouput_directory', help='output to a directory named <directory>')
+    argparser.add_argument('-o', '--output', metavar='OUTPUT_DIR', dest='ouput_dir', help='output to a directory named <directory>')
+    mode = argparser.add_mutually_exclusive_group()
+    mode.add_argument('--train', metavar='AGENT_NAME', type=str, nargs='*', help='learn <AGENT_NAME>s')
+    mode.add_argument('--test', metavar='AGENT_NAME', type=str, nargs='*', help='test <AGENT_NAME>s')
+    mode.add_argument('--train_except', metavar='AGENT_NAME', type=str, nargs='*', help='train all agent except <AGENT_NAME>s')
+    mode.add_argument('--test_except', metavar='AGENT_NAME', type=str, nargs='*', help='test all agent except <AGENT_NAME>s')
 
     args = argparser.parse_args()
-    __input_dir = args.INPUT_DIR;
-    __output_num = args.OUTPUT_NUM;
-    __verbose = args.verbose;
+    __config.input_dir = args.input_dir
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    if hasattr(args, 'output_dir'):
+        __config.output_dir = args.output_dir
+    else:
+        __config.output_dir = __config.input_dir + '_out'
 
 if __name__ == "__main__":
-    parse_argv()
+    parse_args()
+    logging.debug("input from:" + __config.input_dir)
+    logging.debug("output to:" + __config.output_dir)
