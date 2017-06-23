@@ -1,12 +1,13 @@
-import os
+import os, sys
 import logging
+import util.common
 
 class Config:
     __logger = logging.getLogger(__name__)
     def __init__(self):
         self.__message_level = logging.WARNING
         self.__input_dir = ""
-        self.__output_num = ""
+        self.__output_num = 0
         self.__output_dir = ""
 
     @property
@@ -35,6 +36,19 @@ class Config:
         return self.__input_dir
 
     @property
+    def output_num(self):
+        return self.__output_num
+    @output_num.setter
+    def output_num(self, num):
+        if num < 0:
+            Config.__logger.error('OUTPUT_NUM should be larger than 0')
+            sys.exit()
+        self.__output_num = num
+    @output_num.getter
+    def output_num(self):
+        return self.__output_num
+
+    @property
     def output_dir(self):
         return self.__output_dir
     @output_dir.setter
@@ -42,23 +56,9 @@ class Config:
         while directory[-1] == '/':
             del directory[-1]
         self.__output_dir = directory
-        self.__output_answer_dir = self.__output_dir + '/ans'
-        self.__output_image_dir = self.__output_dir + '/img'
+        self.output_answer_dir = self.__output_dir + '/ans'
+        self.output_image_dir = self.__output_dir + '/img'
         Config.__logger.debug('set OUTPUT DIRECTORY:%s' % (directory))
     @output_dir.getter
     def output_dir(self):
         return self.__output_dir
-
-    @property
-    def output_answer_dir(self):
-        return None
-    @output_answer_dir.getter
-    def output_answer_dir(self):
-        return self.__output_answer_dir
-
-    @property
-    def output_image_dir(self):
-        return None
-    @output_image_dir.getter
-    def output_image_dir(self):
-        return self.__output_image_dir

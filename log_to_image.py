@@ -11,9 +11,9 @@ def parse_args(config):
     argparser.add_argument('input_dir', metavar='INPUT_DIR', type=str, help='input log file')
     argparser.add_argument('output_num', metavar='OUTPUT_NUM', type=int, help='number of outputs of each role')
 
-    info_mode = argparser.add_mutually_exclusive_group()
-    info_mode.add_argument('-v', '--verbose', action='store_true', help='show verbose message')
-    info_mode.add_argument('-q', '--quiet', action='store_true', help='quiet any message')
+    message_mode = argparser.add_mutually_exclusive_group()
+    message_mode.add_argument('-v', '--verbose', action='store_true', help='show verbose message')
+    message_mode.add_argument('-q', '--quiet', action='store_true', help='quiet any message')
 
     argparser.add_argument('-o', '--output', metavar='OUTPUT_DIR', dest='ouput_dir', help='output to a directory named <directory>')
 
@@ -26,6 +26,10 @@ def parse_args(config):
     mode.add_argument('--test', metavar='AGENT_NAME', type=str, nargs='*', help='test <AGENT_NAME>s')
     mode.add_argument('--train_except', metavar='AGENT_NAME', type=str, nargs='*', help='train all agent except <AGENT_NAME>s')
     mode.add_argument('--test_except', metavar='AGENT_NAME', type=str, nargs='*', help='test all agent except <AGENT_NAME>s')
+
+    choice = argparser.add_mutually_exclusive_group()
+    choice.add_argument('--winner', action='store_true', help='only use winners data. By default, use all data.')
+    choice.add_argument('--loser', action='store_true', help='only use losers data. By default, use all data.')
 
     args = argparser.parse_args()
 
@@ -47,6 +51,8 @@ def parse_args(config):
     if not os.path.exists(config.input_dir):
         __logger.error("not exist error INPUT DIR:%s" % (config.input_dir))
         sys.exit()
+
+    config.output_num = args.output_num
 
     if hasattr(args, 'output_dir'):
         config.output_dir = args.output_dir
@@ -76,6 +82,12 @@ def parse_args(config):
         for player in args.test_except:
             config.except_players.append(player)
         config.mode = "test"
+
+    config.choice = "all"
+    if args.winner:
+        config.choice = "winner"
+    elif args.loser:
+        config.choice = "loser"
         
 if __name__ == "__main__":
     config = conf.Config()

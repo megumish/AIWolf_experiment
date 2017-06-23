@@ -3,6 +3,7 @@ import glob, os, shutil
 import sys
 import logging
 import functools
+from PIL import Image
 
 __logger = logging.getLogger(__name__)
 __done_init = False
@@ -22,13 +23,16 @@ def init(config):
     __output_dir = config.output_dir
     __logger.debug("start DRY RUN")
 
+    global __output_num
+    __output_num = config.output_num
+
     os.mkdir(config.output_dir)
     os.mkdir(config.output_image_dir)
     os.mkdir(config.output_answer_dir)
     __logger.debug("create OUTPUT DIRECTORIES:%s,%s,%s" % (config.output_dir, config.output_image_dir, config.output_answer_dir))
 
-    global __filenum_role_map
-    __filenum_role_map = {k:v for k, v in zip(role.types, [0 for i in range(len(role.types))])}
+    global __role_filenum_map
+    __role_filenum_map = {k:v for k, v in zip(role.types, [0 for i in range(len(role.types))])}
     __logger.debug("create FILENUM ROLE MAP")
 
     log_files = glob.glob(config.input_dir + "/*")
@@ -64,6 +68,12 @@ def init(config):
     for target in __targets:
         __logger.debug("set TARGET PLAYER:%s" % (target))
 
+    global __mode
+    __mode = config.mode
+
+    global __choice
+    __choice = config.choice
+
     global __done_init
     __done_init = True
 
@@ -78,9 +88,83 @@ def __enable_to(func):
             func(*args, **kwargs)
     return wrapper
 
+__data_num = 0
+def __count_some_nums(func):
+    global __data_num
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        func(*args, **kwargs)
+        __count_filenum(*args, **kwargs)
+        __data_num += 1
+    return wrapper
+
+def __count_filenum(role_str=None):
+    global __logger
+    if not role_str:
+        __logger.error("CAN'T COUNT None ROLE")
+        sys.exit()
+    global __role_filenum_map
+    __role_filenum_map[role_str] += 1
+
 @__enable_to
 def run():
-    global __output_dir
     global __logger
+
+    global __mode
+    __logger.debug("start to generate %s data" % (__mode))
+
+    for log_rows in __logs:
+        __log_rows_to_data(log_rows)
+    
+    __logger.debug("end to generate %s data" % (__mode))
+    global __output_dir
     if __is_dry_run:
         shutil.rmtree(__output_dir)
+
+def __log_rows_to_data(log_rows):
+    player_num = 0
+    player_names = []
+    player_roles = []
+    player_name_role_map = {}
+    for log_row in log_rows:
+        if log_row.split(',')[1] != 'STATUS': break
+        player_names.append(log_row.split(',')[-1])
+        player_roles.append(log_row.split(',')[3])
+        player_name_role_map[log_row.split(',')[-1]] = log_row.split(',')[3]
+        player_num += 1
+    
+    targets = __choice_targets(log_rows, player_roles, player_names)
+    for index, name in zip(range(0, len(player_names)), player_names):
+        if not name in targets: continue
+        for log_row in log_rows:
+            __log_row_to_data(log_row, player_names, player_roles)
+
+def __choice_targets(log_rows, player_roles, player_names):
+    global __targets
+    targets = __targets
+    global __choice
+    if __choice != 'all':
+        winner = log_rows[-1][-1]
+        winner_roles = set()
+        for role in player_roles:
+            if role_to_species(role) == winner:
+                winner_roles.append(role)
+        winners = set()
+        for name, role in player_name_role_map.items():
+            if role in winner_roles:
+                winners.append(name)
+        if __choice == 'winner':
+            targets = __targets.intersection(winners)
+        elif __choice == 'loser':
+            targets = __targets.difference(winners)
+    return targets
+
+def __log_row_to_data(log_row, player_names, player_roles):
+    log_type = log_row.split(',')[1]
+    if log_type == 'TALK':
+        __talk_to_data(log_row, player_names, player_roles)
+
+def __talk_to_data(log_row, player_names, player_roles):
+    content = log_row.split(',')[-1]
+    content_type = content.split(' ')[0]
+
