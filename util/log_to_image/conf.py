@@ -33,3 +33,19 @@ class Config:
     @output_dir.getter
     def output_dir(self):
         return self.__output_dir
+
+    @property
+    def output_answer_dir(self):
+        return None
+
+    @output_answer_dir.getter
+    def output_answer_dir(self):
+        return self.__output_answer_dir
+
+    @property
+    def output_image_dir(self):
+        return None
+
+    @output_image_dir.getter
+    def output_image_dir(self):
+        return self.__output_image_dir

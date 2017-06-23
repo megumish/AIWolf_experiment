@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
 import logging
-from util.common import *
-from util.log_to_image.conf import *
+from util.log_to_image import conf, gen
 
-__config = Config()
+__config = conf.Config()
 def parse_args():
     global __config
 
@@ -30,5 +29,4 @@ def parse_args():
 
 if __name__ == "__main__":
     parse_args()
-    logging.debug("input from:" + __config.input_dir)
-    logging.debug("output to:" + __config.output_dir)
+    gen.init(__config)
