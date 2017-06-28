@@ -1,11 +1,11 @@
-from abc import ABCMeta, abstractmethod
-from . import talk
+import common
 
-class ABConverter(metaclass=ABCMeta):
-    @abstractmethod
-    def convert(self, info):
-        pass
+class BaseConverter:
+    def _init_game_info(self, game_setting):
+       self.game_info = common.info.GameInfo(game_setting) 
 
-    @abstractmethod
-    def __update_game_info(self, log_row):
-        if log_row.split(',')[1] == 'TALK':
+    def _update_game_info(self, content):
+        if content.action_type == 'TALK':
+            self.game_info.talks[content.day] = content
+        if content.action_type == 'VOTE':
+            self.game_info.votes[content.day] = content

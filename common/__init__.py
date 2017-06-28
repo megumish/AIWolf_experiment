@@ -1,5 +1,8 @@
 import logging
 import sys
+from . import content
+from . import info
+from . import evaluator_numeric
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
@@ -26,12 +29,14 @@ class Convertable(Interchangeable):
                 logger.error("talk type_argnum_map.keys() does not match with talk type: %s" % (t))
                 sys.exit()
         super().__init__(types)
+        self.type_argnum_map = type_argnum_map
         self.__str_head_map = {}
         head = 0
         for t, argnum in type_argnum_map.items():
-            __str_head_map[t] = head
+            self.__str_head_map[t] = head
             head += argnum
         self.__head_str_map = {v:k for k, v in self.__str_head_map.items()}
+        self.tail_num = head
     def str_to_head(self, _str):
         return self.__str_head_map[_str]
     def head_to_str(self, _index):
@@ -45,15 +50,16 @@ __action_types = ['TALK', 'VOTE']
 __action_type_argnum_map = {'TALK':1, 'VOTE':1}
 action = Convertable(__action_types, __action_type_argnum_map)
 
+__talk_types = ['ESTIMATE', 'COMINGOUT', 'DIVINATION', 'DIVINED', 'INQUESTED', 'GUARD', 'GUARDED', 'VOTE', 'ATTACK', 'AGREE', 'DISAGREE', 'OVER', 'SKIP', 'REQUEST']
+__talk_type_argnum_map = {'ESTIMATE':2, 'COMINGOUT':2, 'DIVINATION':1, 'DIVINED':2, 'INQUESTED':2, 'GUARD':1, 'GUARDED':1, 'VOTE':1, 'ATTACK':1, 'AGREE':0, 'DISAGREE':0, 'OVER':1, 'SKIP':1, 'REQUEST':0 }
+__talk = Convertable(__talk_types, __talk_type_argnum_map)
+
 __vote_types = ['VOTE']
 __vote_type_argnum_map = {'VOTE':1}
-vote = Convertable(__vote_types, __vote_type_argnum_map)
+__vote = Convertable(__vote_types, __vote_type_argnum_map)
 
-__talk_types = ['ESTIMATE', 'COMINGOUT', 'DIVINATION', 'DIVINED', 'INQUESTED', 'GUARD', 'GUARDED', 'VOTE', 'ATTACK', 'AGREE', 'DISAGREE', 'OVER', 'SKIP', 'REQUEST']
-__talk_type_argnum_map = {'ESTIMATE':2, 'COMINGOUT':2, 'DIVINATION':1, 'DIVINED':2, 'INQUESTED':2, 'GUARD':1, 'GUARDED':1, 'VOTE':1, 'ATTACK':1, 'AGREE':-1, 'DISAGREE':-1, 'OVER':0, 'SKIP':0, 'REQUEST':-1 }
-# add number for subject.
-__talk_type_argnum_map = {k:v for k, v in map(lambda ab: (ab[0], ab[1]+1), talk.type_argnum_map.items())}
-talk = Convertable(__talk_types, __talk_type_argnum_map)
+action.type_instance_map = {'TALK':__talk, 'VOTE':__vote}
+action.has_id = {'TALK':True, 'VOTE':False}
 
 def role_to_species(role_str):
     if role.str_to_index(role_str) == 0:
@@ -62,4 +68,7 @@ def role_to_species(role_str):
         return 'HUMAN'
 
 def index_to_logindex_str(index):
-    return ('%02d') % index
+    return ('%02d') % (index + 1)
+
+def logindex_str_to_index(logindex_str):
+    return int(logindex_str) - 1

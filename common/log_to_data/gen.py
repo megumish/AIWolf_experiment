@@ -1,5 +1,4 @@
-from common import *
-from . import info
+import common
 import glob, os, shutil
 import sys
 import logging
@@ -8,7 +7,7 @@ from PIL import Image
 
 __logger = logging.getLogger(__name__)
 __done_init = False
-__info = info.ConvertInfo()
+__info = common.info.ConvertInfo()
 def init(config, message_level=logging.WARNING, message_formatter=None):
     # set logger
     global __logger
@@ -25,17 +24,19 @@ def init(config, message_level=logging.WARNING, message_formatter=None):
     __info.is_dry_run = config.is_dry_run
     __logger.debug("start DRY RUN")
 
+    __info.role_filenum_map = {k:v for k, v in zip(common.role.types, [0 for i in range(len(common.role.types))])}
+
     # set output info
     __info.output_dir = config.get_output_dir()
+    __info.output_data_dir = config.get_output_data_dir()
+    __info.output_answer_dir = config.get_output_answer_dir()
     __info.output_num = config.get_output_num()
     os.mkdir(config.get_output_dir())
     os.mkdir(config.get_output_data_dir())
     os.mkdir(config.get_output_answer_dir())
+    for role_type in common.role.types:
+        os.mkdir('%s/%s' % (config.get_output_data_dir(), role_type))
     __logger.debug("create OUTPUT DIRECTORIES:%s,%s,%s" % (config.get_output_dir(), config.get_output_data_dir(), config.get_output_answer_dir()))
-
-    # set role file num map
-    __info.role_filenum_map = {k:v for k, v in zip(role.types, [0 for i in range(len(role.types))])}
-    __logger.debug("create ROLE FILENUM MAP")
 
     # load raw log files
     log_files = glob.glob(config.get_input_dir() + "/*")
@@ -45,7 +46,9 @@ def init(config, message_level=logging.WARNING, message_formatter=None):
         __logger.debug("open LOG FILE:%s" % (log_file))
         raw_log_data = open(log_file)
         raw_log_rows = raw_log_data.readlines()
-        for raw_log_row in raw_log_rows:
+        for index in range(len(raw_log_rows)):
+            raw_log_row = raw_log_rows[index]
+            raw_log_row = raw_log_row.replace('AGENT[', '').replace(']', '')
             __info.logs[num_of_file].append(raw_log_row.strip().upper())
     __logger.debug("read LOG FILES")
 
@@ -90,28 +93,12 @@ def __enable_to(func):
             func(*args, **kwargs)
     return wrapper
 
-__data_num = 0
-def __count_some_nums(func):
-    global __data_num
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        func(*args, **kwargs)
-        __count_filenum(*args, **kwargs)
-        __data_num += 1
-    return wrapper
-
-def __count_filenum(role_str=None):
-    global __logger
-    if not role_str:
-        __logger.error("CAN'T COUNT None ROLE")
-        sys.exit()
-    global __role_filenum_map
-    __role_filenum_map[role_str] += 1
-
 @__enable_to
 def run(converter):
     global __logger
+    global __info
 
     __logger.debug("start to convert")
+    __info.init_progress()
     converter.convert(__info)
     __logger.debug("finished to convert")

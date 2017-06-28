@@ -1,5 +1,6 @@
-from common import *
+import common
 import logging
+from progressbar import ProgressBar, Percentage, Bar, Timer
 
 class ConvertInfo:
     def __init__(self, message_level=logging.WARNING, message_formatter=None):
@@ -11,7 +12,7 @@ class ConvertInfo:
             handler.setFormatter(message_formatter)
         self.__logger.addHandler(handler)
 
-    def narrow_down(self, log_row, game_setting):
+    def narrow_down_targets(self, log_row, game_setting):
         targets = set(self.targets)
         if self.choice != 'all':
             winner = log_rows[-1].split(',')[-1]
@@ -28,20 +29,31 @@ class ConvertInfo:
             elif self.choice == 'loser':
                 targets = self.targets.difference(winners)
         return targets
+    
+    def init_progress(self):
+        widgets = ['Total: ', Percentage(), ' ', Bar(), ' ', Timer()]
+        maxval = self.output_num * len(common.role.types)
+        self.__progress= ProgressBar(widgets=widgets, maxval=maxval)
+
+    def update_progress(self):
+        self.__progress.update(sum(self.role_filenum_map.values()))
 
 class GameSetting:
     def __init__(self, log_rows):
         player_num = 0
         player_names = []
         player_roles = []
-        player_name_role_map = {}
         for log_row in log_rows:
             if log_row.split(',')[1] != 'STATUS': break
             player_names.append(log_row.split(',')[-1])
             player_roles.append(log_row.split(',')[3])
-            player_name_role_map[log_row.split(',')[-1]] = log_row.split(',')[3]
             player_num += 1
         self.player_num = player_num
         self.player_names = player_names
         self.player_roles = player_roles
-        self.player_name_role_map = player_name_role_map
+        self.day_num = int(log_rows[-1].split(',')[0])
+
+class GameInfo:
+    def __init__(self, gameSetting):
+        self.talks = [[] for i in range(gameSetting.day_num + 1)]
+        self.votes = [[] for i in range(gameSetting.day_num + 1)]
