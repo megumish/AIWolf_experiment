@@ -38,6 +38,16 @@ class ConvertInfo:
     def update_progress(self):
         self.__progress.update(sum(self.role_filenum_map.values()))
 
+class LearnInfo:
+    def __init__(self, message_level=logging.WARNING, message_formatter=None):
+        self.__logger = logging.getLogger(__name__)
+        handler = logging.StreamHandler()
+        self.__logger.setLevel(message_level)
+        handler.setLevel(message_level)
+        if not message_formatter is None:
+            handler.setFormatter(message_formatter)
+        self.__logger.addHandler(handler)
+
 class GameSetting:
     def __init__(self, log_rows):
         player_num = 0

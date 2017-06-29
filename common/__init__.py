@@ -3,6 +3,7 @@ import sys
 from . import content
 from . import info
 from . import evaluator_numeric
+from . import data
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
