@@ -21,8 +21,7 @@ class Config:
         Config.__logger.debug("set config DEBUG MODE")
 
     def set_input_dir(self, directory):
-        while directory[-1] == '/':
-            del directory[-1]
+        directory = os.path.normpath(directory)
         self.__input_dir = directory
         Config.__logger.debug('set INPUT DIRECTORY:%s' % (directory))
     def get_input_dir(self):
@@ -37,11 +36,10 @@ class Config:
         return self.__output_num
 
     def set_output_dirs(self, directory):
-        while directory[-1] == '/':
-            del directory[-1]
+        directory = os.path.normpath(directory)
         self.__output_dir = directory
-        self.__output_answer_dir = self.__output_dir + '/ans'
-        self.__output_data_dir = self.__output_dir + '/data'
+        self.__output_answer_dir = os.path.join(self.__output_dir, 'ans')
+        self.__output_data_dir = os.path.join(self.__output_dir, 'data')
         Config.__logger.debug('set OUTPUT DIRECTORY:%s' % (directory))
     def get_output_dir(self):
         return self.__output_dir

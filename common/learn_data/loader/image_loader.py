@@ -1,4 +1,5 @@
 import logging
+import os
 import numpy
 from PIL import Image
 from chainer import cuda
@@ -39,11 +40,10 @@ class ImageLoader:
         data.inputs = {}
         answers = []
         inputs = []
-        answer_files = glob.glob('%s/*' % (config.get_input_answer_dir()))
         if role_type is None:
-            image_files = glob.glob('%s/*' % (config.get_input_data_dir()))
+            image_files = glob.glob(os.path.join(config.get_input_data_dir(), '*'))
         else:
-            image_files = glob.glob('%s/%s/*' % (config.get_input_data_dir(), role_type))
+            image_files = glob.glob(os.path.join(config.get_input_data_dir(), role_type, '*'))
 
         loaded_image_size = False
         for image_file in image_files:
@@ -55,19 +55,13 @@ class ImageLoader:
             image_array = image_array.ravel()
             image_array = image_array / 255.0
             inputs.append(image_array)
-            image_name = image_file
-            if '/' in image_file:
-                image_name = image_file.split('/')[-1]
-                image_answer_name = '_'.join(image_name.split('_')[:-1])
-            for answer_file in answer_files:
-                answer_name = answer_file
-                if '/' in answer_name:
-                    answer_name = answer_file.split('/')[-1]
-                if answer_name == image_answer_name:
-                    answer = open(answer_file)
-                    answers.append(float(answer.read()))
-                    answer.close()
-                    break
+            image_name = os.path.basename(image_file)
+            answer_name = os.path.join(config.get_input_answer_dir(), '_'.join(image_name.replace('.png', '').split('_')[:-1]))
+            answer_file = open(answer_name, 'r')
+            answers.append(answer_file.read())
+            answer_file.close()
+        self.__logger.debug('set answers%s' % (str(answers)))
+        self.__logger.debug('set inputs%s' % (str(inputs)))
         data.answers[role_type] = answers
         data.inputs[role_type] = inputs
         return data

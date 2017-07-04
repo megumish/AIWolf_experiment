@@ -20,11 +20,9 @@ class Config:
         Config.__logger.debug("set config DEBUG MODE")
 
     def set_input_dirs(self, directory):
-        while directory[-1] == '/':
-            del directory[-1]
-        self.__input_dir = directory
-        self.__input_answer_dir = self.__input_dir + '/ans'
-        self.__input_data_dir = self.__input_dir + '/data'
+        self.__input_dir = os.path.normpath(directory)
+        self.__input_answer_dir = os.path.join(self.__input_dir, 'ans')
+        self.__input_data_dir = os.path.join(self.__input_dir, 'data')
         Config.__logger.debug('set INPUT DIRECTORY:%s' % (directory))
     def get_input_dir(self):
         return self.__input_dir
@@ -34,9 +32,7 @@ class Config:
         return self.__input_answer_dir
 
     def set_output_model(self, model_name):
-        while model_name[-1] == '/':
-            del model_name[-1]
-        self.__output_model = model_name
+        self.__output_model = os.path.normpath(model_name)
         Config.__logger.debug('set OUTPUT MODEL:%s' % (model_name))
     def get_output_model(self):
         return self.__output_model

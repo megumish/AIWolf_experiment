@@ -34,12 +34,13 @@ def init(config, message_level=logging.WARNING, message_formatter=None):
     os.mkdir(config.get_output_dir())
     os.mkdir(config.get_output_data_dir())
     os.mkdir(config.get_output_answer_dir())
-    for role_type in common.role.types:
-        os.mkdir('%s/%s' % (config.get_output_data_dir(), role_type))
+    if config.mode == 'test':
+        for role_type in common.role.types:
+            os.mkdir(os.path.join(config.get_output_data_dir(), role_type))
     __logger.debug("create OUTPUT DIRECTORIES:%s,%s,%s" % (config.get_output_dir(), config.get_output_data_dir(), config.get_output_answer_dir()))
 
     # load raw log files
-    log_files = glob.glob(config.get_input_dir() + "/*")
+    log_files = glob.glob(os.path.join(config.get_input_dir(), "*"))
     __info.logs = []
     for log_file, num_of_file in zip(log_files, range(0, len(log_files))):
         __info.logs.append([])

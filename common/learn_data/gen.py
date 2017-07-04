@@ -28,8 +28,8 @@ def init(config, loader, message_level=logging.WARNING, message_formatter=None):
 
     # set output info
     __info.output_model = config.get_output_model()
-    if '/' in __info.output_model:
-        parent_dirs = '/'.join(__info.output_model.split('/')[:-1])
+    parent_dirs = os.path.dirname(__info.output_model)
+    if parent_dirs != '' and not os.path.isdir(parent_dirs):
         os.mkdirs(parent_dirs)
         __logger.debug("create OUTPUT DIRS:%s" % (parent_dirs))
 
