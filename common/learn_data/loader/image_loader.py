@@ -64,7 +64,7 @@ class ImageLoader:
             image_name = os.path.basename(image_file)
             answer_name = os.path.join(config.get_input_answer_dir(), image_name.replace('.png', ''))
             answer_file = open(answer_name, 'r')
-            answers.append(answer_file.read())
+            answers.append(float(answer_file.read()))
             answer_file.close()
         data.answers[role_type] = answers
         data.inputs[role_type] = inputs
