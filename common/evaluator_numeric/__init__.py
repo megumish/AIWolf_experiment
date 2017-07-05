@@ -6,3 +6,4 @@ class Evaluator(metaclass=ABCMeta):
         pass
 
 from . import simple
+from . import revealed

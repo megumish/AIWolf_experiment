@@ -17,8 +17,8 @@ class ImageLoader:
             handler.setFormatter(message_formatter)
         self.__logger.addHandler(handler)
 
-    def load(self, config, is_test=False):
-        if is_test:
+    def load(self, config):
+        if config.mode == 'test':
             return self.__load_test_data(config)
         else:
             return self.__load_train_data(config)
@@ -27,8 +27,14 @@ class ImageLoader:
         return self.__load_data(config)
 
     def __load_test_data(self, config):
+        data = Data()
+        data.answers = {}
+        data.inputs = {}
         for role_type in common.role.types:
-            self.__load_data(config, role_type=role_type)
+            new_data = self.__load_data(config, role_type=role_type)
+            data.answers.update(new_data.answers)
+            data.inputs.update(new_data.inputs)
+            data.image_size = new_data.image_size
         return data
 
     def __load_data(self, config, role_type=None):
@@ -56,12 +62,10 @@ class ImageLoader:
             image_array = image_array / 255.0
             inputs.append(image_array)
             image_name = os.path.basename(image_file)
-            answer_name = os.path.join(config.get_input_answer_dir(), '_'.join(image_name.replace('.png', '').split('_')[:-1]))
+            answer_name = os.path.join(config.get_input_answer_dir(), image_name.replace('.png', ''))
             answer_file = open(answer_name, 'r')
             answers.append(answer_file.read())
             answer_file.close()
-        self.__logger.debug('set answers%s' % (str(answers)))
-        self.__logger.debug('set inputs%s' % (str(inputs)))
         data.answers[role_type] = answers
         data.inputs[role_type] = inputs
         return data

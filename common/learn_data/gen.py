@@ -42,6 +42,9 @@ def init(config, loader, message_level=logging.WARNING, message_formatter=None):
     # set train/test mode
     __info.mode = config.mode
 
+    # set learned model
+    __info.learned_model = config.learned_model
+
     global __done_init
     __done_init = True
 

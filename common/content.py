@@ -9,4 +9,4 @@ class Content:
         self.subject = common.logindex_str_to_index(log_row.split(',')[-2])
         self.argv = []
         for arg in action_str.split(' '):
-            self.argv.append(arg)
+            self.argv.append(arg.replace('AGENT[', '').replace(']', ''))
