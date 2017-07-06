@@ -33,7 +33,9 @@ class Convertable(Interchangeable):
         self.type_argnum_map = type_argnum_map
         self.__str_head_map = {}
         head = 0
-        for t, argnum in type_argnum_map.items():
+        for num_of_type in range(len(types)):
+            t = types[num_of_type]
+            argnum = self.type_argnum_map[t]
             self.__str_head_map[t] = head
             head += argnum
         self.__head_str_map = {v:k for k, v in self.__str_head_map.items()}

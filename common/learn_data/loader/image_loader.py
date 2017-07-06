@@ -50,7 +50,6 @@ class ImageLoader:
             image_files = glob.glob(os.path.join(config.get_input_data_dir(), '*'))
         else:
             image_files = glob.glob(os.path.join(config.get_input_data_dir(), role_type, '*'))
-
         loaded_image_size = False
         for image_file in image_files:
             image = Image.open(image_file)
@@ -64,7 +63,8 @@ class ImageLoader:
             image_name = os.path.basename(image_file)
             answer_name = os.path.join(config.get_input_answer_dir(), image_name.replace('.png', ''))
             answer_file = open(answer_name, 'r')
-            answers.append(float(answer_file.read()))
+            answer_num = float(answer_file.read())
+            answers.append(answer_num)
             answer_file.close()
         data.answers[role_type] = answers
         data.inputs[role_type] = inputs

@@ -42,8 +42,9 @@ def init(config, message_level=logging.WARNING, message_formatter=None):
     # load raw log files
     log_files = glob.glob(os.path.join(config.get_input_dir(), "*"))
     __info.logs = []
-    for log_file, num_of_file in zip(log_files, range(0, len(log_files))):
+    for num_of_file in range(0, len(log_files)):
         __info.logs.append([])
+        log_file = log_files[num_of_file]
         __logger.debug("open LOG FILE:%s" % (log_file))
         raw_log_data = open(log_file)
         raw_log_rows = raw_log_data.readlines()
